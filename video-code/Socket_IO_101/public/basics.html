@@ -1,0 +1,26 @@
+<!-- socket.io.js is added by socket.io server -->
+<script src='/socket.io/socket.io.js'></script>
+
+<script>
+
+    // socket.io.js is going to add io to the global scope
+    // console.log(io);
+
+    const socket = io("localhost:8000");
+    console.log(socket)
+
+    socket.on('connect', () => {
+        console.log(socket.id);
+        console.log(socket)
+
+        socket.emit('msgFromClient', { data: 'Client Connected !' })
+    });
+
+    socket.on('msgFromSrvr', (d => {
+        console.log(d.data);
+    }));
+
+
+</script>
+
+<h1>Hi</h1>

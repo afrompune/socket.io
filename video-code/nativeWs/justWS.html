@@ -1,0 +1,18 @@
+<script>
+    let ws = new WebSocket('ws://localhost:8000');
+    //console.log(ws);
+    let count = 1
+    ws.onopen = (ev => {
+        console.log(ev)
+        ws.send(count + ": I'm so excited that we are connected. It feels like my country won the World Cup !!!")
+        count = count + 1
+    })
+
+    ws.onclose = (e => {
+        console.log(e);
+    })
+
+    ws.onmessage = msg => {
+        console.log(msg.data)
+    }
+</script>
