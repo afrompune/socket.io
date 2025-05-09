@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App with Embedded Sites</title>
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s ease;
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        #sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .logo {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 70px;
+        }
+        
+        .logo-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 10px 0;
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            background-color: #34495e;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            margin-right: 15px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            font-size: 15px;
+            white-space: nowrap;
+        }
+        
+        .submenu {
+            list-style: none;
+            background-color: #1a252f;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .submenu.show {
+            max-height: 500px;
+        }
+        
+        .submenu .nav-link {
+            padding-left: 50px;
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+        
+        .toggle-btn.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .sidebar-toggle {
+            position: fixed;
+            left: 240px;
+            top: 20px;
+            width: 30px;
+            height: 30px;
+            background: #2c3e50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 101;
+            border: 2px solid white;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-toggle.collapsed {
+            left: 50px;
+        }
+        
+        /* Main Content */
+        #main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+        
+        #main-content.expanded {
+            margin-left: 60px;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        
+        /* Content Styles */
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Iframe Styles */
+        .site-iframe-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 150px);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .site-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .iframe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .iframe-url {
+            font-family: monospace;
+            color: #666;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-grow: 1;
+        }
+        
+        .iframe-controls button {
+            background: #e0e0e0;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        
+        /* Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            
+            #sidebar.show {
+                transform: translateX(0);
+            }
+            
+            #main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-toggle {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle -->
+    <div class="sidebar-toggle" onclick="toggleSidebar()">≡</div>
+    
+    <!-- Navigation Sidebar -->
+    <div id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">App Dashboard</div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-content="dashboard">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-text">Dashboard</div>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <div class="nav-link" onclick="toggleSubmenu(this)">
+                    <div class="nav-icon">📦</div>
+                    <div class="nav-text">Products</div>
+                    <div class="toggle-btn">▼</div>
+                </div>
+                <ul class="submenu">
+                    <li><a href="#" class="nav-link" data-content="products-list">📋 List</a></li>
+                    <li><a href="#" class="nav-link" data-content="products-add">➕ Add New</a></li>
+                    <li><a href="#" class="nav-link" data-content="products-categories">🗂️ Categories</a></li>
+                </ul>
+            </li>
+            
+            <li class="nav-item">
+                <div class="nav-link" onclick="toggleSubmenu(this)">
+                    <div class="nav-icon">👥</div>
+                    <div class="nav-text">Users</div>
+                    <div class="toggle-btn">▼</div>
+                </div>
+                <ul class="submenu">
+                    <li><a href="#" class="nav-link" data-content="users-list">👨‍💼 All Users</a></li>
+                    <li><a href="#" class="nav-link" data-content="users-roles">🛡️ Roles</a></li>
+                    <li><a href="#" class="nav-link" data-content="users-permissions">🔑 Permissions</a></li>
+                </ul>
+            </li>
+            
+            <li class="nav-item">
+                <div class="nav-link" onclick="toggleSubmenu(this)">
+                    <div class="nav-icon">🌐</div>
+                    <div class="nav-text">Sites</div>
+                    <div class="toggle-btn">▼</div>
+                </div>
+                <ul class="submenu">
+                    <li><a href="https://www.google.com" class="nav-link" onclick="loadExternalSite(event, 'Google')">
+                        <div class="nav-icon">G</div>
+                        <div class="nav-text">Google</div>
+                    </a></li>
+                    <li><a href="https://www.github.com" class="nav-link" onclick="loadExternalSite(event, 'GitHub')">
+                        <div class="nav-icon">⌨️</div>
+                        <div class="nav-text">GitHub</div>
+                    </a></li>
+                    <li><a href="https://www.stackoverflow.com" class="nav-link" onclick="loadExternalSite(event, 'Stack Overflow')">
+                        <div class="nav-icon">🗃️</div>
+                        <div class="nav-text">Stack Overflow</div>
+                    </a></li>
+                </ul>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-content="settings">
+                    <div class="nav-icon">⚙️</div>
+                    <div class="nav-text">Settings</div>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div id="main-content">
+        <div class="content-header">
+            <h1 class="page-title" id="page-title">Dashboard</h1>
+            <div class="user-info">
+                <span id="current-date"></span>
+            </div>
+        </div>
+        
+        <div id="content-container">
+            <div class="content-card">
+                <div id="dynamic-content">
+                    <h2>Welcome to Your Dashboard</h2>
+                    <p>Select a menu item to view different sections.</p>
+                    <p>External sites will open in this panel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const sidebarToggle = document.querySelector('.sidebar-toggle');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageTitle = document.getElementById('page-title');
+        const dynamicContent = document.getElementById('dynamic-content');
+        const currentDateElement = document.getElementById('current-date');
+        const contentContainer = document.getElementById('content-container');
+        
+        // Sample content data
+        const contentData = {
+            'dashboard': {
+                title: 'Dashboard Overview',
+                content: `
+                    <h3>Welcome back!</h3>
+                    <p>Here's your current status:</p>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                            <h4>Total Users</h4>
+                            <p style="font-size: 24px; font-weight: bold;">1,248</p>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                            <h4>Products</h4>
+                            <p style="font-size: 24px; font-weight: bold;">356</p>
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px;">
+                            <h4>Orders</h4>
+                            <p style="font-size: 24px; font-weight: bold;">89</p>
+                        </div>
+                    </div>
+                `
+            },
+            'products-list': {
+                title: 'Product List',
+                content: `
+                    <h3>All Products</h3>
+                    <p>Manage your product inventory:</p>
+                    <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; background: #f5f5f5; padding: 10px 15px; font-weight: bold;">
+                            <div>ID</div>
+                            <div>Name</div>
+                            <div>Price</div>
+                            <div>Stock</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; padding: 10px 15px; border-bottom: 1px solid #eee;">
+                            <div>1001</div>
+                            <div>Premium Widget</div>
+                            <div>$19.99</div>
+                            <div>45</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; padding: 10px 15px; border-bottom: 1px solid #eee;">
+                            <div>1002</div>
+                            <div>Deluxe Gadget</div>
+                            <div>$29.99</div>
+                            <div>32</div>
+                        </div>
+                    </div>
+                `
+            },
+            'users-list': {
+                title: 'User Management',
+                content: `
+                    <h3>Registered Users</h3>
+                    <p>View and manage user accounts:</p>
+                    <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 2fr 1fr; background: #f5f5f5; padding: 10px 15px; font-weight: bold;">
+                            <div>ID</div>
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Role</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 2fr 1fr; padding: 10px 15px; border-bottom: 1px solid #eee;">
+                            <div>101</div>
+                            <div>John Doe</div>
+                            <div>john@example.com</div>
+                            <div>Admin</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 2fr 1fr; padding: 10px 15px;">
+                            <div>102</div>
+                            <div>Jane Smith</div>
+                            <div>jane@example.com</div>
+                            <div>User</div>
+                        </div>
+                    </div>
+                `
+            },
+            'settings': {
+                title: 'Application Settings',
+                content: `
+                    <h3>Settings Panel</h3>
+                    <p>Configure your application preferences:</p>
+                    
+                    <div style="margin-top: 20px;">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                            <h4 style="margin-bottom: 15px;">General Settings</h4>
+                            <div style="display: grid; grid-template-columns: max-content 1fr; gap: 15px; align-items: center;">
+                                <div>Dark Mode:</div>
+                                <div><button style="padding: 5px 15px; background: #e0e0e0; border: none; border-radius: 4px;">Toggle</button></div>
+                                
+                                <div>Notifications:</div>
+                                <div><button style="padding: 5px 15px; background: #e0e0e0; border: none; border-radius: 4px;">Configure</button></div>
+                                
+                                <div>Language:</div>
+                                <div>
+                                    <select style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                                        <option>English</option>
+                                        <option>Spanish</option>
+                                        <option>French</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+        
+        // Initialize
+        function init() {
+            // Set current date
+            const today = new Date();
+            currentDateElement.textContent = today.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Set up event listeners
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Skip processing for external links (handled separately)
+                    if (this.onclick && this.onclick.name === 'loadExternalSite') {
+                        return;
+                    }
+                    
+                    if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                    }
+                    
+                    // Handle submenu toggles (they don't have data-content)
+                    if (!this.dataset.content) return;
+                    
+                    // Update active state
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Load content
+                    loadContent(this.dataset.content);
+                });
+            });
+            
+            // Load initial content
+            loadContent('dashboard');
+        }
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            sidebarToggle.classList.toggle('collapsed');
+            
+            // For mobile
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+            }
+        }
+        
+        // Toggle submenus
+        function toggleSubmenu(link) {
+            const submenu = link.nextElementSibling;
+            const toggleBtn = link.querySelector('.toggle-btn');
+            
+            submenu.classList.toggle('show');
+            toggleBtn.classList.toggle('rotated');
+        }
+        
+        // Load content
+        function loadContent(contentKey) {
+            // Clear any existing iframe
+            const existingIframe = document.querySelector('.site-iframe-container');
+            if (existingIframe) {
+                existingIframe.remove();
+            }
+            
+            // Show loading state
+            dynamicContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            // Simulate network delay
+            setTimeout(() => {
+                const content = contentData[contentKey] || {
+                    title: 'Content Not Found',
+                    content: '<p>The requested content could not be loaded.</p>'
+                };
+                
+                pageTitle.textContent = content.title;
+                dynamicContent.innerHTML = content.content;
+            }, 300);
+        }
+        
+        // Load external site in iframe
+        function loadExternalSite(event, siteName) {
+            event.preventDefault();
+            const url = event.currentTarget.href;
+            
+            // Update active state
+            navLinks.forEach(link => link.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Update page title
+            pageTitle.textContent = siteName;
+            
+            // Clear previous content
+            dynamicContent.innerHTML = '';
+            
+            // Create iframe container
+            const iframeContainer = document.createElement('div');
+            iframeContainer.className = 'site-iframe-container';
+            
+            // Create iframe header
+            const iframeHeader = document.createElement('div');
+            iframeHeader.className = 'iframe-header';
+            iframeHeader.innerHTML = `
+                <div class="iframe-url">${url}</div>
+                <div class="iframe-controls">
+                    <button onclick="refreshIframe()">⟳ Refresh</button>
+                    <button onclick="openInNewTab('${url}')">↗ New Tab</button>
+                </div>
+            `;
+            
+            // Create iframe
+            const iframe = document.createElement('iframe');
+            iframe.className = 'site-iframe';
+            iframe.src = url;
+            iframe.setAttribute('allow', 'fullscreen');
+            
+            // Assemble components
+            iframeContainer.appendChild(iframeHeader);
+            iframeContainer.appendChild(iframe);
+            
+            // Add to DOM
+            dynamicContent.appendChild(iframeContainer);
+            
+            // Show loading state in iframe
+            iframe.onload = function() {
+                console.log(`${siteName} loaded in iframe`);
+            };
+        }
+        
+        // Refresh iframe
+        function refreshIframe() {
+            const iframe = document.querySelector('.site-iframe');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        }
+        
+        // Open current iframe URL in new tab
+        function openInNewTab(url) {
+            window.open(url, '_blank');
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

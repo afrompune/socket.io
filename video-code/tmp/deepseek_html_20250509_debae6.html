@@ -1,0 +1,57 @@
+<script>
+    // Modified loadExternalSite function to make POST request
+    async function loadExternalSite(event, siteName) {
+        event.preventDefault();
+        
+        // Show loading state
+        dynamicContent.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Making POST request...</div>
+            </div>
+        `;
+
+        const url = 'https://jsonplaceholder.typicode.com/posts'; // Example API
+        const data = {
+            abcd: 'test', // Your parameter
+            title: 'Example POST',
+            body: 'This is a test POST request',
+            userId: 1
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            pageTitle.textContent = `POST Response from ${siteName}`;
+            dynamicContent.innerHTML = `
+                <div class="content-card">
+                    <h3>POST Request Successful</h3>
+                    <p>Sent data: <code>${JSON.stringify(data)}</code></p>
+                    <div style="margin-top: 20px; background: #f5f5f5; padding: 15px; border-radius: 5px;">
+                        <h4>Response:</h4>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error:', error);
+            dynamicContent.innerHTML = `
+                <div class="error-message">
+                    <h3>POST Request Failed</h3>
+                    <p>Error: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+</script>
