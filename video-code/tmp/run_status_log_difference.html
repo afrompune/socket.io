@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Web App Dashboard</title>
+    <style>
+        /* (Previous CSS remains exactly the same) */
+        /* ... */
+
+        /* New styles for action buttons */
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .run-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .run-btn:hover {
+            background-color: #3e8e41;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-running {
+            background-color: #D1ECF1;
+            color: #0C5460;
+        }
+        
+        .status-completed {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .view-log-btn {
+            background-color: #6C757D;
+            color: white;
+        }
+        
+        .view-log-btn:hover {
+            background-color: #5A6268;
+        }
+        
+        .log-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            padding: 20px;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .log-window pre {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .log-window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .close-log-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6C757D;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- (Previous HTML remains the same until the contentData object in JavaScript) -->
+    <!-- ... -->
+
+    <div class="overlay" id="overlay"></div>
+    <div class="log-window" id="logWindow">
+        <div class="log-window-header">
+            <h3>Process Log</h3>
+            <button class="close-log-btn" onclick="closeLogWindow()">×</button>
+        </div>
+        <pre id="logContent"></pre>
+    </div>
+
+    <script>
+        // (Previous JavaScript remains the same until the contentData object)
+        // ...
+
+        // Sample content data with enhanced product list
+        const contentData = {
+            // (Other content entries remain the same)
+            // ...
+            
+            'products-list': {
+                title: 'Product List',
+                content: `
+                    <h3>All Products</h3>
+                    <p>Manage your product inventory and processes:</p>
+                    <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr 120px 120px 120px; background: #f5f5f5; padding: 10px 15px; font-weight: bold;">
+                            <div>ID</div>
+                            <div>Name</div>
+                            <div>Price</div>
+                            <div>Stock</div>
+                            <div>Action</div>
+                            <div>Status</div>
+                            <div>Logs</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr 120px 120px 120px; padding: 10px 15px; border-bottom: 1px solid #eee; align-items: center;">
+                            <div>1001</div>
+                            <div>Premium Widget</div>
+                            <div>$19.99</div>
+                            <div>45</div>
+                            <div><button class="action-btn run-btn" onclick="runProcess('1001')">Run</button></div>
+                            <div><span class="status-badge status-pending" id="status-1001">Pending</span></div>
+                            <div><button class="action-btn view-log-btn" onclick="viewLog('1001')">View Log</button></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr 120px 120px 120px; padding: 10px 15px; border-bottom: 1px solid #eee; align-items: center;">
+                            <div>1002</div>
+                            <div>Deluxe Gadget</div>
+                            <div>$29.99</div>
+                            <div>32</div>
+                            <div><button class="action-btn run-btn" onclick="runProcess('1002')">Run</button></div>
+                            <div><span class="status-badge status-pending" id="status-1002">Pending</span></div>
+                            <div><button class="action-btn view-log-btn" onclick="viewLog('1002')">View Log</button></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr 1fr 120px 120px 120px; padding: 10px 15px; align-items: center;">
+                            <div>1003</div>
+                            <div>Ultimate Tool</div>
+                            <div>$49.99</div>
+                            <div>18</div>
+                            <div><button class="action-btn run-btn" onclick="runProcess('1003')">Run</button></div>
+                            <div><span class="status-badge status-pending" id="status-1003">Pending</span></div>
+                            <div><button class="action-btn view-log-btn" onclick="viewLog('1003')">View Log</button></div>
+                        </div>
+                    </div>
+                `
+            },
+            
+            // (Other content entries remain the same)
+            // ...
+        };
+
+        // Process tracking object
+        const processes = {
+            '1001': { status: 'pending', log: [] },
+            '1002': { status: 'pending', log: [] },
+            '1003': { status: 'pending', log: [] }
+        };
+
+        // Track interval IDs for status checks
+        const statusIntervals = {};
+
+        // Function to run a process
+        function runProcess(productId) {
+            // Update UI
+            const statusElement = document.getElementById(`status-${productId}`);
+            statusElement.className = 'status-badge status-running';
+            statusElement.textContent = 'Running';
+            
+            // Update process tracking
+            processes[productId].status = 'running';
+            addLogEntry(productId, `Process started at ${new Date().toLocaleTimeString()}`);
+            
+            // Simulate POST request
+            simulatePostRequest(productId)
+                .then(() => {
+                    // Start status checking
+                    statusIntervals[productId] = setInterval(() => {
+                        checkProcessStatus(productId);
+                    }, 10000);
+                });
+        }
+
+        // Simulate POST request
+        function simulatePostRequest(productId) {
+            return new Promise(resolve => {
+                // In a real app, this would be an actual fetch POST
+                setTimeout(() => {
+                    addLogEntry(productId, `POST request sent for product ${productId}`);
+                    resolve();
+                }, 1000);
+            });
+        }
+
+        // Check process status
+        function checkProcessStatus(productId) {
+            // In a real app, this would check with your backend
+            const process = processes[productId];
+            const statusElement = document.getElementById(`status-${productId}`);
+            
+            // Simulate different outcomes
+            const random = Math.random();
+            
+            if (process.status === 'running') {
+                if (random > 0.7) {
+                    // Process completed
+                    process.status = 'completed';
+                    clearInterval(statusIntervals[productId]);
+                    statusElement.className = 'status-badge status-completed';
+                    statusElement.textContent = 'Completed';
+                    addLogEntry(productId, `Process completed at ${new Date().toLocaleTimeString()}`);
+                } else if (random > 0.5) {
+                    // Process failed
+                    process.status = 'failed';
+                    clearInterval(statusIntervals[productId]);
+                    statusElement.className = 'status-badge status-failed';
+                    statusElement.textContent = 'Failed';
+                    addLogEntry(productId, `Process failed at ${new Date().toLocaleTimeString()}`);
+                } else {
+                    // Still running
+                    addLogEntry(productId, `Process still running... (${new Date().toLocaleTimeString()})`);
+                }
+            }
+        }
+
+        // Add log entry
+        function addLogEntry(productId, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            processes[productId].log.push(`[${timestamp}] ${message}`);
+        }
+
+        // View log
+        function viewLog(productId) {
+            const logWindow = document.getElementById('logWindow');
+            const logContent = document.getElementById('logContent');
+            const overlay = document.getElementById('overlay');
+            
+            logContent.textContent = processes[productId].log.join('\n');
+            logWindow.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        // Close log window
+        function closeLogWindow() {
+            document.getElementById('logWindow').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        // (Rest of the previous JavaScript remains the same)
+        // ...
+    </script>
+</body>
+</html>
