@@ -1,0 +1,69 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs26 \cf0 ### **Comparison Table: Data Lake Migration Options**  \
+\
+| **Criteria**             | **Pure Native AWS (S3 + Athena/Redshift)** | **Pure Native GCP (BigQuery + Cloud Storage)** | **Snowflake on AWS** | **Databricks on GCP** |\
+|--------------------------|--------------------------------------------|-----------------------------------------------|----------------------|-----------------------|\
+| **Security & Compliance** | Strong (IAM, KMS, Macie, GuardDuty) | Strong (IAM, CMEK, Data Loss Prevention) | Excellent (RBAC, end-to-end encryption) | Strong (Unity Catalog, encryption) |\
+| **Performance** | Fast (Redshift Spectrum, Athena) | Very Fast (BigQuery serverless) | Excellent (separation of storage/compute) | High (Delta Lake optimizations) |\
+| **Scalability** | High (auto-scaling with Redshift) | Very High (BigQuery scales infinitely) | Very High (elastic compute) | Very High (auto-scaling clusters) |\
+| **Cost Efficiency** | Pay-per-use (but can get expensive) | Very cost-effective (BigQuery pricing) | Expensive (credit-based model) | Moderate (cluster-based pricing) |\
+| **Ease of Use** | Moderate (multiple services to manage) | Very Easy (fully managed) | Very Easy (SQL-first, no infra mgmt.) | Moderate (requires Spark knowledge) |\
+| **Data Governance** | Good (Lake Formation, Glue) | Good (Dataplex, Data Catalog) | Excellent (time travel, cloning) | Excellent (Unity Catalog) |\
+| **Integration with AI/ML** | Good (SageMaker) | Excellent (Vertex AI, BigQuery ML) | Limited (external integrations) | Excellent (MLflow, Spark ML) |\
+| **Vendor Lock-in Risk** | High (AWS-specific services) | High (GCP-specific services) | Moderate (Snowflake runs on AWS/GCP/Azure) | Moderate (Databricks is multi-cloud) |\
+\
+---\
+\
+### **Oral Presentation Script**  \
+\
+#### **Introduction**  \
+*"Thank you for joining today\'92s discussion on our data lake migration strategy. We are evaluating four key options: Pure AWS, Pure GCP, Snowflake on AWS, and Databricks on GCP. Each has its strengths and trade-offs, particularly in security, performance, and cost. Let\'92s break them down."*  \
+\
+---\
+\
+#### **1. Pure Native AWS Architecture**  \
+*"A pure AWS approach leverages S3 for storage, Athena/Redshift for querying, and Lake Formation for governance. Pros include strong security (IAM, KMS) and deep AWS integrations. However, managing multiple services (Glue, Redshift, Athena) increases complexity. Costs can escalate with heavy Redshift usage, and we face high vendor lock-in."*  \
+\
+**Key Concern:** *"While AWS provides robust security, compliance requires continuous monitoring (GuardDuty, Macie), which adds overhead."*  \
+\
+---\
+\
+#### **2. Pure Native GCP Architecture**  \
+*"GCP\'92s BigQuery + Cloud Storage is a fully managed, serverless option. BigQuery is incredibly fast and cost-effective for analytics. Security is top-notch with CMEK and Data Loss Prevention. However, like AWS, we\'92re locked into GCP. Also, real-time streaming is not as mature as AWS Kinesis."*  \
+\
+**Key Advantage:** *"BigQuery\'92s pay-per-query pricing can be cheaper than Redshift for variable workloads."*  \
+\
+---\
+\
+#### **3. Snowflake on AWS**  \
+*"Snowflake offers a cloud-agnostic data warehouse on AWS. It separates storage and compute, allowing independent scaling. Security is excellent with RBAC and automatic encryption. However, Snowflake\'92s credit-based pricing can get expensive, and we still depend on AWS for some infra."*  \
+\
+**Key Benefit:** *"Time-travel and zero-copy cloning make governance and testing easier than native AWS/GCP."*  \
+\
+---\
+\
+#### **4. Databricks on GCP**  \
+*"Databricks on GCP combines Delta Lake\'92s reliability with Spark\'92s processing power. Unity Catalog provides strong governance, and MLflow integrates well with AI workflows. However, managing clusters requires expertise, and costs depend on workload patterns."*  \
+\
+**Key Strength:** *"If we need advanced AI/ML, Databricks is a better fit than Snowflake or native GCP."*  \
+\
+---\
+\
+#### **Recommendation & Next Steps**  \
+*"If minimizing cost and maximizing ease of use is critical, GCP BigQuery is a strong contender. If we need advanced analytics and AI, Databricks on GCP is ideal. Snowflake is best if we want a cloud-agnostic warehouse with strong governance. AWS native is powerful but complex."*  \
+\
+*"Next steps include a proof-of-concept for the top two options based on our specific workload patterns."*  \
+\
+**Q&A:** *"I\'92d love to hear your thoughts\'97do we prioritize cost, security, or flexibility most?"*  \
+\
+---\
+\
+### **Closing**  \
+This structured comparison and script will help guide your team\'92s decision-making process. Let me know if you'd like any refinements!}
